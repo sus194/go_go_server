@@ -55,6 +55,23 @@ func handleAllRoutes(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Request for route %s has been added to the map.\n", route)
 }
 
+func handleAllRoutes(w http.ResponseWriter, r *http.Request) {
+	processingTime := 0 * time.Millisecond
+	if pt := r.URL.Query().Get("processingTime"); pt != "" {
+		if duration, err := time.ParseDuration(pt + "ms"); err == nil {
+			processingTime = duration
+		}
+	}
+
+	requests <- Request{
+		ResponseWriter: w,
+		Request:        r,
+		ID:             id,
+		ArrivalTime:    time.Now(),
+		ProcessingTime: processingTime,
+	}
+	id++
+}
 
 func main() {
 	// Create a channel to hold requests
@@ -65,6 +82,8 @@ func main() {
 		go worker(i, requests)
 	}
 	// Handler function to enqueue requests
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", handleAllRoutes)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// Enqueue the request
 		var data RequestData

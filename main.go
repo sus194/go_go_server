@@ -4,70 +4,88 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"fmt"
+	"time"
+	"encoding/json"
+	"sync"
+	"data_types"
+	"tasks"
 )
 
 const (
 	// Number of worker goroutines
 	numWorkers = 10
-	// Target API server URL
-	apiServerURL = "http://api.example.com"
-	Port string = ":3000"
+	Port = ":3000"
 )
 
-// Request struct for handling incoming requests
-type Request struct {
-	// Request details
-	ResponseWriter http.ResponseWriter
-	Request        *http.Request
-}
+var(
+	id            = 0
+    mapMutex = &sync.Mutex{}
+)
 
 // Worker function to process and forward requests
 func worker(id int, requests <-chan Request) {
-	client := &http.Client{}
 	for req := range requests {
-		// Create a new request to forward to the API server
-		apiReq, err := http.NewRequest(req.Request.Method, apiServerURL+req.Request.URL.Path, req.Request.Body)
-		if err != nil {
-			log.Printf("Worker %d: Error creating request: %v", id, err)
-			req.ResponseWriter.WriteHeader(http.StatusInternalServerError)
-			continue
-		}
-
-		// Copy headers
-		for name, values := range req.Request.Header {
-			for _, value := range values {
-				apiReq.Header.Add(name, value)
-			}
-		}
-
-		// Forward request
-		resp, err := client.Do(apiReq)
-		if err != nil {
-			log.Printf("Worker %d: Error forwarding request: %v", id, err)
-			req.ResponseWriter.WriteHeader(http.StatusBadGateway)
-			continue
-		}
-		defer resp.Body.Close()
-
-		// Copy the API server response
-		req.ResponseWriter.WriteHeader(resp.StatusCode)
-		io.Copy(req.ResponseWriter, resp.Body)
+		// Simulate processing time
+		time.Sleep(req.ProcessingTime * time.Millisecond)
+		// Process request and send response
+		_, err := fmt.Fprintf(req.ResponseWriter, "Worker %d processed request\n", id)
+        if err != nil {
+            log.Printf("Worker %d: Error writing response: %v\n", id, err)
+        }
 	}
 }
 
+func handleAllRoutes(w http.ResponseWriter, r *http.Request) {
+	// Lock the map for concurrent access
+	mapMutex.Lock()
+	defer mapMutex.Unlock()
+
+	// Add request to map with route as key
+	route := r.URL.Path
+	data_types.RequestMap[route] = Request{
+		ResponseWriter: w,
+		Request:        r,
+		ID:             id,
+		ArrivalTime:    time.Now(),
+	}
+	id++
+
+	// Send a response for demonstration
+	fmt.Fprintf(w, "Request for route %s has been added to the map.\n", route)
+}
+
+
 func main() {
 	// Create a channel to hold requests
-	requests := make(chan Request, 100)
+	requests := make(chan Request, 1000)
 
 	// Start worker goroutines
 	for i := 1; i <= numWorkers; i++ {
 		go worker(i, requests)
 	}
-
 	// Handler function to enqueue requests
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// Enqueue the request
-		requests <- Request{ResponseWriter: w, Request: r}
+		var data RequestData
+
+		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+            http.Error(w, "Invalid request body", http.StatusBadRequest)
+            return
+        }
+
+		idMutex.Lock()
+        currentID := id
+        id++
+        idMutex.Unlock()
+
+		requests <- Request{
+			ResponseWriter: w, 
+			Request: r, 
+			ID: id, 
+			ArrivalTime: time.Now(), 
+			ProcessingTime: data.ProcessingTime,
+		}
 	})
 
 	// Start the server

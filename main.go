@@ -10,6 +10,7 @@ import (
 	"sync"
 	"data_types"
 	"tasks"
+	"schedulars"
 )
 
 const (
@@ -19,14 +20,14 @@ const (
 )
 
 var(
-	id            = 0
+	id       = 0
     mapMutex = &sync.Mutex{}
 )
 
 
 func handleAllRoutes(w http.ResponseWriter, r *http.Request) {
 	taskName := r.URL.Path[1:] // Extract task name from URL path
-	handler, exists := taskMap[taskName]
+	handler, exists := data_types.TaskMap[taskName]
 	if !exists {
 		http.Error(w, "Task not found", http.StatusNotFound)
 		return
@@ -40,8 +41,8 @@ func handleAllRoutes(w http.ResponseWriter, r *http.Request) {
 		Priority:		0
 	}
 	data_types.RequestMap[taskName] = append(data_types.RequestMap[taskName], request)
+	schedulars.Round_Robin(taskName, request)
 	id++
-	handler(w, r)
 }
 
 func main() {

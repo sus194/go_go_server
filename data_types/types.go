@@ -3,8 +3,9 @@ import (
 	"net/http"
 	"time"
 	"encoding/json"
-	"../tasks"
+	"tasks"
 	"data_types/queue"
+	"queue"
 )
 
 // Define a custom type for RequestState
@@ -12,9 +13,6 @@ type RequestState int
 // Define constants for different states using iota
 const (
     ReadyState RequestState = iota
-	SentState
-	ProcessingState
-	WaitingState
     CompletedState
     FailedState
 )
@@ -38,5 +36,6 @@ var(
 		"keyboard-input":   tasks.HandleKeyboardInput,
 		// Add more tasks here
 	}
-	Request_Waiting 
+	Request_Waiting = &queue.Queue{}
+	Request_Processing = &queue.Queue{}
 )

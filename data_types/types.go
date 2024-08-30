@@ -3,6 +3,8 @@ import (
 	"net/http"
 	"time"
 	"encoding/json"
+	"../tasks"
+	"data_types/queue"
 )
 
 // Define a custom type for RequestState
@@ -24,9 +26,17 @@ type Request struct {
 	Request        *http.Request
 	ID            int
     ArrivalTime   time.Time
-	State  		   RequestState		
+	State  		  RequestState
+	Priority	  int		
 }
+type TaskHandler func(w http.ResponseWriter, r *http.Request)
 
 var(
-	RequestMap = make(map[string]Request)
+	RequestMap = make(map[string][]Request)
+	TaskMap = map[string]TaskHandler{
+		"mouse-click":      tasks.HandleMouseClick,
+		"keyboard-input":   tasks.HandleKeyboardInput,
+		// Add more tasks here
+	}
+	Request_Waiting 
 )

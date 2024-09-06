@@ -2,10 +2,8 @@ package data_types
 import (
 	"net/http"
 	"time"
-	"encoding/json"
-	"tasks"
-	"data_types/queue"
-	"queue"
+	"go_go_server/data_types/tasks"
+	"go_go_server/data_types/queue"
 )
 
 // Define a custom type for RequestState

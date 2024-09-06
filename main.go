@@ -1,16 +1,11 @@
 package main
 
 import (
-	"io"
 	"log"
 	"net/http"
-	"fmt"
 	"time"
-	"encoding/json"
 	"sync"
-	"data_types"
-	"tasks"
-	"schedulars"
+	"go_go_server/data_types"
 )
 
 const (
@@ -27,8 +22,7 @@ var(
 
 func handleAllRoutes(w http.ResponseWriter, r *http.Request) {
 	taskName := r.URL.Path[1:] // Extract task name from URL path
-	handler, exists := data_types.TaskMap[taskName]
-	if !exists {
+	if _, ok := data_types.TaskMap[taskName]; !ok {
 		http.Error(w, "Task not found", http.StatusNotFound)
 		return
 	}
@@ -38,10 +32,9 @@ func handleAllRoutes(w http.ResponseWriter, r *http.Request) {
 		ID:             id,
 		ArrivalTime:    time.Now(),
 		State:			data_types.ReadyState,
-		Priority:		0
+		Priority:		0,
 	}
 	data_types.RequestMap[taskName] = append(data_types.RequestMap[taskName], request)
-	schedulars.Round_Robin(taskName, request)
 	id++
 }
 
@@ -49,7 +42,6 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handleAllRoutes)
 
-	// Start the server
 	log.Println("Starting server on Port", Port)
 	if err := http.ListenAndServe(Port, nil); err != nil {
 		log.Fatal(err)

@@ -1,9 +1,13 @@
 package tasks
 
-import(
-	"fmt"
+import (
+	"net/http"
 )
 
-func task(task_time int)(task_id int,  string){
+func HandleMouseClick(w http.ResponseWriter, r *http.Request){
+	
+}
 
+func HandleKeyboardInput(w http.ResponseWriter, r *http.Request){
+	
 }

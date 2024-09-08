@@ -1,4 +1,5 @@
 package schedulars
+
 import(
 	"go_go_server/data_types"
 )

@@ -32,7 +32,6 @@ var(
 	TaskMap = map[string]TaskHandler{
 		"mouse-click":      tasks.HandleMouseClick,
 		"keyboard-input":   tasks.HandleKeyboardInput,
-		// Add more tasks here
 	}
 	Request_Waiting = &queue.Queue{}
 	Request_Processing = &queue.Queue{}

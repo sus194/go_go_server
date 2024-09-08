@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
+	"go_go_server/data_types"
+	"go_go_server/schedulars"
 	"log"
 	"net/http"
-	"time"
 	"sync"
-	"go_go_server/data_types"
+	"time"
 )
 
 const (
@@ -40,10 +42,20 @@ func handleAllRoutes(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", handleAllRoutes)
+    mux.HandleFunc("/", handleAllRoutes)
+    log.Println("Starting server on Port", Port)
 
-	log.Println("Starting server on Port", Port)
-	if err := http.ListenAndServe(Port, nil); err != nil {
-		log.Fatal(err)
-	}
+    ticker := time.NewTicker(1 * time.Second)
+    defer ticker.Stop()
+
+    go func() {
+        for range ticker.C {
+            schedulars.Schedule()
+        }
+    }()
+
+    
+    if err := http.ListenAndServe(Port, mux); err != nil {
+        log.Fatal(err)
+    }
 }

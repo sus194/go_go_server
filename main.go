@@ -35,7 +35,9 @@ func handleAllRoutes(w http.ResponseWriter, r *http.Request) {
 		State:			data_types.ReadyState,
 		Priority:		0,
 	}
+	schedulars.Mu.Lock()
 	data_types.RequestMap[taskName] = append(data_types.RequestMap[taskName], request)
+	schedulars.Mu.Unlock()
 	id++
 }
 

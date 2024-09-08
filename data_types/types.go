@@ -33,6 +33,10 @@ var(
 		"mouse-click":      tasks.HandleMouseClick,
 		"keyboard-input":   tasks.HandleKeyboardInput,
 	}
+	Task_Priority = map[string]int{
+		"mouse-click":      1,
+		"keyboard-input":   1,
+	}
 	Request_Waiting = &queue.Queue{}
 	Request_Processing = &queue.Queue{}
 )

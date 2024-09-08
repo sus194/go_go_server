@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"go_go_server/data_types"
 	"go_go_server/schedulars"
 	"log"
@@ -47,14 +46,13 @@ func main() {
 
     ticker := time.NewTicker(1 * time.Second)
     defer ticker.Stop()
-
+	//runs the Schedule function every second
     go func() {
         for range ticker.C {
             schedulars.Schedule()
         }
     }()
 
-    
     if err := http.ListenAndServe(Port, mux); err != nil {
         log.Fatal(err)
     }
